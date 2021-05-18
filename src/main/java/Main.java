@@ -15,7 +15,9 @@ public class Main {
     public static void main(String[] args) {
         SparkSession spark = SparkSession.builder().appName("Simple Application").getOrCreate();
         spark.sparkContext().setLogLevel("ERROR");
-        Dataset<Row> data2016 = spark.read().format("csv").load("/user/hadoop/task1/expedia/new_ver/year=2016/*.csv");
+        Dataset<Row> data2016 = spark.read().format("csv")
+                .option("header", "true")
+                .load("/user/hadoop/task1/expedia/new_ver/year=2016/*.csv");
         String[] strings = data2016.columns();
         System.out.println("Expedia rows are " + data2016.count());
         System.out.println("Schema is " + data2016.schema());
