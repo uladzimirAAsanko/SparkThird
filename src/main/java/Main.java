@@ -25,7 +25,7 @@ public class Main {
         for(String part : strings){
             System.out.println("Part is     " + part);
         }
-        data2016.schema();
+        System.out.println(data2016.schema());
     }
 
     private static void invokeHotelData(){
