@@ -22,6 +22,7 @@ public class Main {
 
     public static void main(String[] args) {
         SparkSession spark = SparkSession.builder().appName("Simple Application").getOrCreate();
+        invokeHotelData();
         spark.sparkContext().setLogLevel("ERROR");
         Dataset<Row> data2016 = spark.read().format("csv")
                 .option("header", "true")
@@ -38,6 +39,7 @@ public class Main {
         List<Row> list = data2016
                 .selectExpr("CAST(hotel_id AS LONG)", "CAST(srch_ci AS STRING)", "CAST(srch_co AS STRING)", "CAST(id AS LONG)")
                 .collectAsList();
+        List<Long> listOfHotels = data2016.selectExpr("CAST(hotel_id AS LONG)").distinct().as(Encoders.LONG()).collectAsList();
         for(Row row : list){
             Long hotelID = row.getLong(0);
             String checkIN = row.getString(1);
@@ -59,7 +61,52 @@ public class Main {
         listOfStructField.add(DataTypes.createStructField("stay_type",DataTypes.IntegerType,false));
         StructType structType = DataTypes.createStructType(listOfStructField);
         Dataset<Row> dataset = spark.createDataFrame(correctSet, structType);
-        dataset.where("stay_type=1").groupBy("hotel_id").count().orderBy(desc("count()")).show();
+        List<Row> answerData = new ArrayList<Row>();
+        for(Long hotelID : listOfHotels){
+            long shortStayCount = dataset.where("hotel_id="+hotelID)
+                    .where("stay_type="+StayType.SHORT_STAY.getStayID()).count();
+            long max = shortStayCount;
+            StayType mostPopular = StayType.SHORT_STAY;
+            long erroneousCount = dataset.where("hotel_id="+hotelID)
+                    .where("stay_type="+StayType.ERRONEOUS_DATA.getStayID()).count();
+            if(erroneousCount > max){
+                max = erroneousCount;
+                mostPopular = StayType.ERRONEOUS_DATA;
+            }
+            long standStayCount = dataset.where("hotel_id="+hotelID)
+                    .where("stay_type="+StayType.STANDARD_STAY.getStayID()).count();
+            if(standStayCount > max){
+                max = standStayCount;
+                mostPopular = StayType.STANDARD_STAY;
+            }
+            long standExtendStayCount = dataset.where("hotel_id="+hotelID)
+                    .where("stay_type="+StayType.STANDARD_EXTENDED_STAY.getStayID()).count();
+            if(standExtendStayCount > max){
+                max = standExtendStayCount;
+                mostPopular = StayType.STANDARD_EXTENDED_STAY;
+            }
+            long longStayCount = dataset.where("hotel_id="+hotelID)
+                    .where("stay_type="+StayType.LONG_STAY.getStayID()).count();
+            if(longStayCount > max){
+                mostPopular = StayType.LONG_STAY;
+            }
+            String name = hotelData.get(hotelID).getName();
+            answerData.add(RowFactory.create(hotelID, name, shortStayCount,erroneousCount,
+                    standStayCount, standExtendStayCount, longStayCount, mostPopular.toString()));
+        }
+        List<org.apache.spark.sql.types.StructField> structs=
+                new ArrayList<org.apache.spark.sql.types.StructField>();
+        structs.add(DataTypes.createStructField("hotel_id",DataTypes.LongType,false));
+        structs.add(DataTypes.createStructField("hotel_name",DataTypes.StringType,false));
+        structs.add(DataTypes.createStructField("short_stay_cnt",DataTypes.LongType,false));
+        structs.add(DataTypes.createStructField("erroneous_stay_cnt",DataTypes.LongType,false));
+        structs.add(DataTypes.createStructField("stand_stay_cnt",DataTypes.LongType,false));
+        structs.add(DataTypes.createStructField("stand_extended_stay_cnt",DataTypes.LongType,false));
+        structs.add(DataTypes.createStructField("long_stay_cnt",DataTypes.LongType,false));
+        structs.add(DataTypes.createStructField("most_popular",DataTypes.StringType,false));
+        StructType structures = DataTypes.createStructType(structs);
+        Dataset<Row> answerAtAll = spark.createDataFrame(answerData, structures);
+        answerAtAll.show();
         System.out.println("Temp size is " + correctSet.size());
     }
 
