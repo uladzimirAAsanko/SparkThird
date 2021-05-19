@@ -36,10 +36,10 @@ public class Main {
             String checkIN = value.getString(1);
             String checkOUT = value.getString(2);
             HashMap<String, Double> map = hotelWeatherHM.get(hotelID);
-            if(map == null || map.get(checkIN) <= 0){
-                tmp.add(-1.0);
-            }else{
+            if(map != null && map.get(checkIN) > 0){
                 tmp.add(map.get(checkIN));
+            }else{
+                tmp.add(-1.0);
             }
         }
         System.out.println("Temp size is " + tmp.size());
