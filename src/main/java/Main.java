@@ -61,6 +61,8 @@ public class Main {
         StructType structType = DataTypes.createStructType(listOfStructField);
         Dataset<Row> cleanedAndMarkedDataset = spark.createDataFrame(correctSet, structType);
 
+
+
         System.out.println("Delete all invalid data and check stay_type ");
         cleanedAndMarkedDataset.show();
         List<Long> listOfHotels = cleanedAndMarkedDataset
