@@ -15,6 +15,7 @@ public class Main {
     private static String YEAR_2016 = "hotel-and-weather-joined-simple";
     private static String YEAR_2017_AUG = "weather-hash-2017-8";
     private static String YEAR_2017_SEPT = "weather-hash-2017-9";
+    private static HashMap<Long, HashMap<String, Double>> hotelWeatherHM = new HashMap<>();
 
     public static void main(String[] args) {
         SparkSession spark = SparkSession.builder().appName("Simple Application").getOrCreate();
@@ -72,5 +73,9 @@ public class Main {
         for(String part : strings){
             System.out.println("Part is     " + part);
         }
+        df.foreach(row -> {
+            String value = row.getString(0);
+            System.out.println(value);
+        });
     }
 }
