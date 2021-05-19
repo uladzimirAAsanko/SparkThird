@@ -31,21 +31,25 @@ public class Main {
         }
         readWthData(spark, HOTEL_WEATHER_JOINED);
         List<Row> correctSet = new ArrayList<Row>();
-        List<Row> list = data2016.selectExpr("CAST(hotel_id AS LONG)", "CAST(srch_ci AS STRING)", "CAST(srch_co AS STRING)")
+        List<Row> list = data2016
+                .selectExpr("CAST(hotel_id AS LONG)", "CAST(srch_ci AS STRING)", "CAST(srch_co AS STRING)", "CAST(id AS LONG)")
                 .collectAsList();
         for(Row row : list){
             Long hotelID = row.getLong(0);
             String checkIN = row.getString(1);
             String checkOUT = row.getString(2);
+            Long id = row.getLong(3);
             HashMap<String, Double> map = hotelWeatherHM.get(hotelID);
             if(map != null && map.get(checkIN) != null && map.get(checkIN) > 0){
-                correctSet.add(RowFactory.create(hotelID,checkIN, map.get(checkIN)));
+                correctSet.add(RowFactory.create(id, hotelID, checkIN, checkOUT, map.get(checkIN)));
             }
         }
         List<org.apache.spark.sql.types.StructField> listOfStructField=
                 new ArrayList<org.apache.spark.sql.types.StructField>();
+        listOfStructField.add(DataTypes.createStructField("id",DataTypes.LongType,false));
         listOfStructField.add(DataTypes.createStructField("hash_id",DataTypes.LongType,false));
         listOfStructField.add(DataTypes.createStructField("checkIn",DataTypes.StringType,false));
+        listOfStructField.add(DataTypes.createStructField("checkOut",DataTypes.StringType,false));
         listOfStructField.add(DataTypes.createStructField("avg_tmp",DataTypes.DoubleType,false));
         StructType structType = DataTypes.createStructType(listOfStructField);
         Dataset<Row> dataset = spark.createDataFrame(correctSet, structType);
