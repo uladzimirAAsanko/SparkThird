@@ -13,7 +13,6 @@ public class Parser {
         String residue = data.substring(indexOfComma + 1);
         for(int i = 0; i < numberOfFields - 2; i++){
             indexOfComma = residue.indexOf(comma);
-            String tmp = residue.substring(0, indexOfComma);
             list.add(residue.substring(0, indexOfComma));
             residue = residue.substring(indexOfComma + 1);
         }

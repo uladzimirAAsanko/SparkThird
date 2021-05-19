@@ -1,14 +1,14 @@
 package by.sanko.spark.two.entity;
 
 public class HotelData {
-    private long id;
-    private String name;
-    private String country;
-    private String city;
-    private String address;
-    private double longitude;
-    private double latitude;
-    private String geoHash;
+    private final long id;
+    private final String name;
+    private final String country;
+    private final String city;
+    private final String address;
+    private final double longitude;
+    private final double latitude;
+    private final String geoHash;
 
     public HotelData(long id, String name, String country, String city, String address, double longitude, double latitude, String geoHash) {
         this.id = id;

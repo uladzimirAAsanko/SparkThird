@@ -14,9 +14,9 @@ public class HotelParser {
         String country = list.get(2);
         String city = list.get(3);
         String address = list.get(4);
-        double lng = 0;
+        double lng;
         String geoHash = list.get(7);
-        double lat = 0;
+        double lat;
         try {
             lat = Double.parseDouble(list.get(6));
             lng = Double.parseDouble(list.get(5));

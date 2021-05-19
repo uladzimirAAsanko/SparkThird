@@ -6,19 +6,15 @@ import org.apache.spark.sql.*;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructType;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.apache.spark.sql.functions.desc;
 
 public class Main {
-    private static HashMap<Long, HotelData> hotelData = new HashMap<>();
-    private static String HOTEL_WEATHER_JOINED = "hotel-and-weather-joined-simple";
-    private static HashMap<Long, HashMap<String, Double>> hotelWeatherHM = new HashMap<>();
-    private static char comma = ',';
+    private static final HashMap<Long, HotelData> hotelData = new HashMap<>();
+    private static final HashMap<Long, HashMap<String, Double>> hotelWeatherHM = new HashMap<>();
 
     public static void main(String[] args) {
         SparkSession spark = SparkSession.builder().appName("Simple Application").getOrCreate();
@@ -34,8 +30,9 @@ public class Main {
         for(String part : strings){
             System.out.println("Part is     " + part);
         }
+        String HOTEL_WEATHER_JOINED = "hotel-and-weather-joined-simple";
         readWthData(spark, HOTEL_WEATHER_JOINED);
-        List<Row> correctSet = new ArrayList<Row>();
+        List<Row> correctSet = new ArrayList<>();
         List<Row> list = data2016
                 .selectExpr("CAST(hotel_id AS LONG)", "CAST(srch_ci AS STRING)", "CAST(srch_co AS STRING)", "CAST(id AS LONG)")
                 .collectAsList();
@@ -50,8 +47,8 @@ public class Main {
                 correctSet.add(RowFactory.create(id, hotelID, checkIN, checkOUT, map.get(checkIN), stayType));
             }
         }
-        List<org.apache.spark.sql.types.StructField> listOfStructField=
-                new ArrayList<org.apache.spark.sql.types.StructField>();
+
+        List<org.apache.spark.sql.types.StructField> listOfStructField = new ArrayList<>();
         listOfStructField.add(DataTypes.createStructField("id",DataTypes.LongType,false));
         listOfStructField.add(DataTypes.createStructField("hotel_id",DataTypes.LongType,false));
         listOfStructField.add(DataTypes.createStructField("checkIn",DataTypes.StringType,false));
@@ -72,7 +69,7 @@ public class Main {
                 .collectAsList();
         System.out.println("Start to counting by typed of data ");
         System.out.println("Uniq hotels in cleaned dataset " + listOfHotels.size());
-        List<Row> answerData = new ArrayList<Row>();
+        List<Row> answerData = new ArrayList<>();
         int i = 0;
         for(Long hotelID : listOfHotels){
             i++;
@@ -109,8 +106,8 @@ public class Main {
             answerData.add(RowFactory.create(hotelID, name, shortStayCount,erroneousCount,
                     standStayCount, standExtendStayCount, longStayCount, mostPopular.toString()));
         }
-        List<org.apache.spark.sql.types.StructField> structs=
-                new ArrayList<org.apache.spark.sql.types.StructField>();
+
+        List<org.apache.spark.sql.types.StructField> structs = new ArrayList<>();
         structs.add(DataTypes.createStructField("hotel_id",DataTypes.LongType,false));
         structs.add(DataTypes.createStructField("hotel_name",DataTypes.StringType,false));
         structs.add(DataTypes.createStructField("short_stay_cnt",DataTypes.LongType,false));
@@ -182,9 +179,7 @@ public class Main {
         });
         System.out.println("Hotel key size is " + hotelWeatherHM.keySet().size());
         AtomicInteger i = new AtomicInteger();
-        hotelWeatherHM.forEach((k,v)->{
-            i.addAndGet(v.size());
-        });
+        hotelWeatherHM.forEach((k,v)-> i.addAndGet(v.size()));
         System.out.println("All values are " + i);
     }
 }

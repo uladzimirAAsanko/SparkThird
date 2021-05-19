@@ -1,6 +1,5 @@
 package by.sanko.spark.two.entity;
 
-import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -18,7 +17,7 @@ public enum StayType {
         this.id = id;
     }
 
-    private static SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+    private static final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
 
 
     public int getStayID(){
