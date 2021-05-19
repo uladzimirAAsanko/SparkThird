@@ -12,6 +12,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.apache.spark.sql.functions.desc;
+
 public class Main {
     private static HashMap<Long, HotelData> hotelData = new HashMap<>();
     private static String HOTEL_WEATHER_JOINED = "hotel-and-weather-joined-simple";
@@ -50,14 +52,14 @@ public class Main {
         List<org.apache.spark.sql.types.StructField> listOfStructField=
                 new ArrayList<org.apache.spark.sql.types.StructField>();
         listOfStructField.add(DataTypes.createStructField("id",DataTypes.LongType,false));
-        listOfStructField.add(DataTypes.createStructField("hash_id",DataTypes.LongType,false));
+        listOfStructField.add(DataTypes.createStructField("hotel_id",DataTypes.LongType,false));
         listOfStructField.add(DataTypes.createStructField("checkIn",DataTypes.StringType,false));
         listOfStructField.add(DataTypes.createStructField("checkOut",DataTypes.StringType,false));
         listOfStructField.add(DataTypes.createStructField("avg_tmp",DataTypes.DoubleType,false));
         listOfStructField.add(DataTypes.createStructField("stay_type",DataTypes.IntegerType,false));
         StructType structType = DataTypes.createStructType(listOfStructField);
         Dataset<Row> dataset = spark.createDataFrame(correctSet, structType);
-        dataset.where("stay_type=4").show();
+        dataset.where("stay_type=1").groupBy("hotel_id").count().orderBy(desc("count()")).show();
         System.out.println("Temp size is " + correctSet.size());
     }
 
