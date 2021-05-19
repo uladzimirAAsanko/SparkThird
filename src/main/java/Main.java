@@ -39,7 +39,6 @@ public class Main {
         List<Row> list = data2016
                 .selectExpr("CAST(hotel_id AS LONG)", "CAST(srch_ci AS STRING)", "CAST(srch_co AS STRING)", "CAST(id AS LONG)")
                 .collectAsList();
-        List<Long> listOfHotels = data2016.selectExpr("CAST(hotel_id AS LONG)").distinct().as(Encoders.LONG()).collectAsList();
         for(Row row : list){
             Long hotelID = row.getLong(0);
             String checkIN = row.getString(1);
@@ -60,34 +59,43 @@ public class Main {
         listOfStructField.add(DataTypes.createStructField("avg_tmp",DataTypes.DoubleType,false));
         listOfStructField.add(DataTypes.createStructField("stay_type",DataTypes.IntegerType,false));
         StructType structType = DataTypes.createStructType(listOfStructField);
-        Dataset<Row> dataset = spark.createDataFrame(correctSet, structType);
+        Dataset<Row> cleanedAndMarkedDataset = spark.createDataFrame(correctSet, structType);
+
         System.out.println("Delete all invalid data and check stay_type ");
-        dataset.show();
+        cleanedAndMarkedDataset.show();
+        List<Long> listOfHotels = cleanedAndMarkedDataset
+                .selectExpr("CAST(hotel_id AS LONG)")
+                .distinct()
+                .as(Encoders.LONG())
+                .collectAsList();
+        System.out.println("Start to counting by typed of data ");
         List<Row> answerData = new ArrayList<Row>();
         for(Long hotelID : listOfHotels){
-            long shortStayCount = dataset.where("hotel_id="+hotelID)
+            System.out.println("Processing rows of hotel with id " + hotelID);
+            Dataset<Row> allRowsWithHotel = cleanedAndMarkedDataset.where("hotel_id="+hotelID);
+            long shortStayCount = allRowsWithHotel
                     .where("stay_type="+StayType.SHORT_STAY.getStayID()).count();
             long max = shortStayCount;
             StayType mostPopular = StayType.SHORT_STAY;
-            long erroneousCount = dataset.where("hotel_id="+hotelID)
+            long erroneousCount = allRowsWithHotel
                     .where("stay_type="+StayType.ERRONEOUS_DATA.getStayID()).count();
             if(erroneousCount > max){
                 max = erroneousCount;
                 mostPopular = StayType.ERRONEOUS_DATA;
             }
-            long standStayCount = dataset.where("hotel_id="+hotelID)
+            long standStayCount = allRowsWithHotel
                     .where("stay_type="+StayType.STANDARD_STAY.getStayID()).count();
             if(standStayCount > max){
                 max = standStayCount;
                 mostPopular = StayType.STANDARD_STAY;
             }
-            long standExtendStayCount = dataset.where("hotel_id="+hotelID)
+            long standExtendStayCount = allRowsWithHotel
                     .where("stay_type="+StayType.STANDARD_EXTENDED_STAY.getStayID()).count();
             if(standExtendStayCount > max){
                 max = standExtendStayCount;
                 mostPopular = StayType.STANDARD_EXTENDED_STAY;
             }
-            long longStayCount = dataset.where("hotel_id="+hotelID)
+            long longStayCount = allRowsWithHotel
                     .where("stay_type="+StayType.LONG_STAY.getStayID()).count();
             if(longStayCount > max){
                 mostPopular = StayType.LONG_STAY;
