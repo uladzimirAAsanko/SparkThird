@@ -30,22 +30,22 @@ public class Main {
             System.out.println("Part is     " + part);
         }
         readWthData(spark, HOTEL_WEATHER_JOINED);
-        List<Row> correctSet = new ArrayList<Row>();
-        data2016.selectExpr("CAST(hotel_id AS LONG)", "CAST(srch_ci AS STRING)", "CAST(srch_co AS STRING)")
-                .foreach(row -> {
-                    Long hotelID = row.getLong(0);
-                    String checkIN = row.getString(1);
-                    String checkOUT = row.getString(2);
-                    HashMap<String, Double> map = hotelWeatherHM.get(hotelID);
-                    if(map != null && map.get(checkIN) != null && map.get(checkIN) > 0){
-                        correctSet.add(RowFactory.create(hotelID,checkIN, map.get(checkIN)));
-                    }
-                });
+        List<Row> correctSet = data2016.selectExpr("CAST(hotel_id AS LONG)", "CAST(srch_ci AS STRING)", "CAST(srch_co AS STRING)")
+                .collectAsList();
+        for(Row row : correctSet){
+            Long hotelID = row.getLong(0);
+            String checkIN = row.getString(1);
+            String checkOUT = row.getString(2);
+            HashMap<String, Double> map = hotelWeatherHM.get(hotelID);
+            if(map != null && map.get(checkIN) != null && map.get(checkIN) > 0){
+                correctSet.add(RowFactory.create(hotelID,checkIN, map.get(checkIN)));
+            }
+        }
         List<org.apache.spark.sql.types.StructField> listOfStructField=
                 new ArrayList<org.apache.spark.sql.types.StructField>();
-        listOfStructField.add(DataTypes.createStructField("city",DataTypes.LongType,false));
-        listOfStructField.add(DataTypes.createStructField("count",DataTypes.StringType,false));
-        listOfStructField.add(DataTypes.createStructField("country",DataTypes.DoubleType,false));
+        listOfStructField.add(DataTypes.createStructField("hash_id",DataTypes.LongType,false));
+        listOfStructField.add(DataTypes.createStructField("checkIn",DataTypes.StringType,false));
+        listOfStructField.add(DataTypes.createStructField("avg_tmp",DataTypes.DoubleType,false));
         StructType structType = DataTypes.createStructType(listOfStructField);
         Dataset<Row> dataset = spark.createDataFrame(correctSet, structType);
         dataset.show();
