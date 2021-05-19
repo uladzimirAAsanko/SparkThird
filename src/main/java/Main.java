@@ -127,6 +127,12 @@ public class Main {
         Dataset<Row> answerAtAll = spark.createDataFrame(answerData, structures);
         answerAtAll.show();
         System.out.println("Temp size is " + correctSet.size());
+        System.out.println("Write 2016 data into csv file into folder");
+        answerAtAll.write().format("csv")
+                .option("sep", ";")
+                .option("inferSchema", "true")
+                .option("header", "true")
+                .save("/user/hadoop/task1/expedia/spark-save/2016/");
     }
 
     private static void invokeHotelData(){
