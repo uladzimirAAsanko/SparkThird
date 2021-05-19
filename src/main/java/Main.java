@@ -12,7 +12,7 @@ import java.util.ResourceBundle;
 
 public class Main {
     private static HashMap<Long, HotelData> hotelData = new HashMap<>();
-    private static String YEAR_2016 = "hotel-and-weather-joined";
+    private static String YEAR_2016 = "hotel-and-weather-joined-simple";
     private static String YEAR_2017_AUG = "weather-hash-2017-8";
     private static String YEAR_2017_SEPT = "weather-hash-2017-9";
 
