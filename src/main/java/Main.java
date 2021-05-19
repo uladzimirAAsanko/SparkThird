@@ -9,7 +9,7 @@ import org.apache.spark.sql.SparkSession;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.ResourceBundle;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Main {
     private static HashMap<Long, HotelData> hotelData = new HashMap<>();
@@ -92,6 +92,11 @@ public class Main {
                 map.put(date,avg);
             }
         });
-        System.out.println("Hotel map size is " + hotelWeatherHM.size());
+        System.out.println("Hotel key size is " + hotelWeatherHM.keySet().size());
+        AtomicInteger i = new AtomicInteger();
+        hotelWeatherHM.forEach((k,v)->{
+            i.addAndGet(v.size());
+        });
+        System.out.println("All values are " + i);
     }
 }
