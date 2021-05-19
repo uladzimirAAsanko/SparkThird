@@ -1,10 +1,12 @@
 import by.sanko.spark.two.entity.HotelData;
+import by.sanko.spark.two.entity.StayType;
 import by.sanko.spark.two.parser.HotelParser;
 import by.sanko.spark.two.parser.Parser;
 import org.apache.spark.sql.*;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructType;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -41,7 +43,8 @@ public class Main {
             Long id = row.getLong(3);
             HashMap<String, Double> map = hotelWeatherHM.get(hotelID);
             if(map != null && map.get(checkIN) != null && map.get(checkIN) > 0){
-                correctSet.add(RowFactory.create(id, hotelID, checkIN, checkOUT, map.get(checkIN)));
+                String stayType = StayType.calculateType(checkIN, checkOUT).getStay();
+                correctSet.add(RowFactory.create(id, hotelID, checkIN, checkOUT, map.get(checkIN), stayType));
             }
         }
         List<org.apache.spark.sql.types.StructField> listOfStructField=
@@ -51,6 +54,7 @@ public class Main {
         listOfStructField.add(DataTypes.createStructField("checkIn",DataTypes.StringType,false));
         listOfStructField.add(DataTypes.createStructField("checkOut",DataTypes.StringType,false));
         listOfStructField.add(DataTypes.createStructField("avg_tmp",DataTypes.DoubleType,false));
+        listOfStructField.add(DataTypes.createStructField("stay_type",DataTypes.StringType,false));
         StructType structType = DataTypes.createStructType(listOfStructField);
         Dataset<Row> dataset = spark.createDataFrame(correctSet, structType);
         dataset.show();
