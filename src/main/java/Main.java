@@ -61,6 +61,8 @@ public class Main {
         listOfStructField.add(DataTypes.createStructField("stay_type",DataTypes.IntegerType,false));
         StructType structType = DataTypes.createStructType(listOfStructField);
         Dataset<Row> dataset = spark.createDataFrame(correctSet, structType);
+        System.out.println("Delete all invalid data and check stay_type ");
+        dataset.show();
         List<Row> answerData = new ArrayList<Row>();
         for(Long hotelID : listOfHotels){
             long shortStayCount = dataset.where("hotel_id="+hotelID)
