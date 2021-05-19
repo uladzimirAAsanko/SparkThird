@@ -13,9 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class Main {
     private static HashMap<Long, HotelData> hotelData = new HashMap<>();
-    private static String YEAR_2016 = "hotel-and-weather-joined-simple";
-    private static String YEAR_2017_AUG = "weather-hash-2017-8";
-    private static String YEAR_2017_SEPT = "weather-hash-2017-9";
+    private static String HOTEL_WEATHER_JOINED = "hotel-and-weather-joined-simple";
     private static HashMap<Long, HashMap<String, Double>> hotelWeatherHM = new HashMap<>();
     private static char comma = ',';
 
@@ -32,7 +30,9 @@ public class Main {
         for(String part : strings){
             System.out.println("Part is     " + part);
         }
-        readWthData(spark, YEAR_2016);
+        readWthData(spark, HOTEL_WEATHER_JOINED);
+        data2016.selectExpr("CAST(hotel_id AS LONG)", "CAST(srch_ci AS STRING)", "CAST(srch_co AS STRING)")
+                .show();
     }
 
     private static void invokeHotelData(){
@@ -70,8 +70,6 @@ public class Main {
                 .load();
         df.selectExpr("CAST(value AS STRING)").show();
         String[] strings = df.columns();
-        System.out.println("Expedia rows are " + df.count());
-        System.out.println("Schema is " + df.schema());
         for(String part : strings){
             System.out.println("Part is     " + part);
         }
