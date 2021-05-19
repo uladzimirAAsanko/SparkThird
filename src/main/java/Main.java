@@ -71,9 +71,12 @@ public class Main {
                 .as(Encoders.LONG())
                 .collectAsList();
         System.out.println("Start to counting by typed of data ");
+        System.out.println("Uniq hotels in cleaned dataset " + listOfHotels.size());
         List<Row> answerData = new ArrayList<Row>();
+        int i = 0;
         for(Long hotelID : listOfHotels){
-            System.out.println("Processing rows of hotel with id " + hotelID);
+            i++;
+            System.out.println("Processing rows of hotel with id " + hotelID + " hotel is " + i);
             Dataset<Row> allRowsWithHotel = cleanedAndMarkedDataset.where("hotel_id="+hotelID);
             long shortStayCount = allRowsWithHotel
                     .where("stay_type="+StayType.SHORT_STAY.getStayID()).count();
