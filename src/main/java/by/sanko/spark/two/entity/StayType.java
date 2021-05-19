@@ -16,7 +16,7 @@ public enum StayType {
     private static SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
 
     public String getStay(){
-        return this.name().getBytes(StandardCharsets.UTF_8).toString();
+        return this.name();
     }
 
     public static StayType calculateType(String checkIn, String checkOut){
