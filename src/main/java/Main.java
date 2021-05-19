@@ -2,6 +2,8 @@ import by.sanko.spark.two.entity.HotelData;
 import by.sanko.spark.two.parser.HotelParser;
 import by.sanko.spark.two.parser.Parser;
 import org.apache.spark.sql.*;
+import org.apache.spark.sql.types.DataTypes;
+import org.apache.spark.sql.types.StructType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,21 +30,26 @@ public class Main {
             System.out.println("Part is     " + part);
         }
         readWthData(spark, HOTEL_WEATHER_JOINED);
-        List<Row> rows = data2016.selectExpr("CAST(hotel_id AS LONG)", "CAST(srch_ci AS STRING)", "CAST(srch_co AS STRING)")
-                .collectAsList();
-        List<Double> tmp = new ArrayList<>();
-        for(Row value : rows){
-            Long hotelID = value.getLong(0);
-            String checkIN = value.getString(1);
-            String checkOUT = value.getString(2);
-            HashMap<String, Double> map = hotelWeatherHM.get(hotelID);
-            if(map != null && map.get(checkIN) != null && map.get(checkIN) > 0){
-                tmp.add(map.get(checkIN));
-            }else{
-                tmp.add(-1.0);
-            }
-        }
-        System.out.println("Temp size is " + tmp.size());
+        List<Row> correctSet = new ArrayList<Row>();
+        data2016.selectExpr("CAST(hotel_id AS LONG)", "CAST(srch_ci AS STRING)", "CAST(srch_co AS STRING)")
+                .foreach(row -> {
+                    Long hotelID = row.getLong(0);
+                    String checkIN = row.getString(1);
+                    String checkOUT = row.getString(2);
+                    HashMap<String, Double> map = hotelWeatherHM.get(hotelID);
+                    if(map != null && map.get(checkIN) != null && map.get(checkIN) > 0){
+                        correctSet.add(RowFactory.create(hotelID,checkIN, map.get(checkIN)));
+                    }
+                });
+        List<org.apache.spark.sql.types.StructField> listOfStructField=
+                new ArrayList<org.apache.spark.sql.types.StructField>();
+        listOfStructField.add(DataTypes.createStructField("city",DataTypes.LongType,false));
+        listOfStructField.add(DataTypes.createStructField("count",DataTypes.StringType,false));
+        listOfStructField.add(DataTypes.createStructField("country",DataTypes.DoubleType,false));
+        StructType structType = DataTypes.createStructType(listOfStructField);
+        Dataset<Row> dataset = spark.createDataFrame(correctSet, structType);
+        dataset.show();
+        System.out.println("Temp size is " + correctSet.size());
     }
 
     private static void invokeHotelData(){
