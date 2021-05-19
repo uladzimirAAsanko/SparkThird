@@ -12,6 +12,10 @@ import java.util.ResourceBundle;
 
 public class Main {
     private static HashMap<Long, HotelData> hotelData = new HashMap<>();
+    private static String YEAR_2016 = "weather-hash-2016-10";
+    private static String YEAR_2017_AUG = "weather-hash-2017-8";
+    private static String YEAR_2017_SEPT = "weather-hash-2017-9";
+
     public static void main(String[] args) {
         SparkSession spark = SparkSession.builder().appName("Simple Application").getOrCreate();
         spark.sparkContext().setLogLevel("ERROR");
@@ -25,7 +29,7 @@ public class Main {
         for(String part : strings){
             System.out.println("Part is     " + part);
         }
-        System.out.println(data2016.schema());
+        readWthData(spark, YEAR_2016);
     }
 
     private static void invokeHotelData(){
@@ -52,5 +56,21 @@ public class Main {
         System.out.println("Hotel data is " + hotelData.size());
         long numAs = df.count();
         System.out.println("Lines at all: " + numAs);
+    }
+
+    private static void readWthData(SparkSession spark, String topicName){
+        Dataset<Row> df = spark
+                .read()
+                .format("kafka")
+                .option("kafka.bootstrap.servers", "host.docker.internal:9094")
+                .option("subscribe", topicName) //weathers-data-hash
+                .load();
+        df.show();
+        String[] strings = df.columns();
+        System.out.println("Expedia rows are " + df.count());
+        System.out.println("Schema is " + df.schema());
+        for(String part : strings){
+            System.out.println("Part is     " + part);
+        }
     }
 }
