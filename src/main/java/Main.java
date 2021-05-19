@@ -43,7 +43,7 @@ public class Main {
             Long id = row.getLong(3);
             HashMap<String, Double> map = hotelWeatherHM.get(hotelID);
             if(map != null && map.get(checkIN) != null && map.get(checkIN) > 0){
-                String stayType = StayType.calculateType(checkIN, checkOUT).getStay();
+                int stayType = StayType.calculateType(checkIN, checkOUT).getStayID();
                 correctSet.add(RowFactory.create(id, hotelID, checkIN, checkOUT, map.get(checkIN), stayType));
             }
         }
@@ -54,7 +54,7 @@ public class Main {
         listOfStructField.add(DataTypes.createStructField("checkIn",DataTypes.StringType,false));
         listOfStructField.add(DataTypes.createStructField("checkOut",DataTypes.StringType,false));
         listOfStructField.add(DataTypes.createStructField("avg_tmp",DataTypes.DoubleType,false));
-        listOfStructField.add(DataTypes.createStructField("stay_type",DataTypes.StringType,false));
+        listOfStructField.add(DataTypes.createStructField("stay_type",DataTypes.IntegerType,false));
         StructType structType = DataTypes.createStructType(listOfStructField);
         Dataset<Row> dataset = spark.createDataFrame(correctSet, structType);
         dataset.show();

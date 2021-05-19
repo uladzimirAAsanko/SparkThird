@@ -7,16 +7,22 @@ import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 public enum StayType {
-    ERRONEOUS_DATA,
-    SHORT_STAY,
-    STANDARD_STAY,
-    STANDARD_EXTENDED_STAY,
-    LONG_STAY;
+    ERRONEOUS_DATA(0),
+    SHORT_STAY(1),
+    STANDARD_STAY(2),
+    STANDARD_EXTENDED_STAY(3),
+    LONG_STAY(4);
+
+    int id;
+    StayType(int id){
+        this.id = id;
+    }
 
     private static SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
 
-    public String getStay(){
-        return this.name();
+
+    public int getStayID(){
+        return this.id;
     }
 
     public static StayType calculateType(String checkIn, String checkOut){
