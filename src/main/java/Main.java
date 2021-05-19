@@ -30,9 +30,10 @@ public class Main {
             System.out.println("Part is     " + part);
         }
         readWthData(spark, HOTEL_WEATHER_JOINED);
-        List<Row> correctSet = data2016.selectExpr("CAST(hotel_id AS LONG)", "CAST(srch_ci AS STRING)", "CAST(srch_co AS STRING)")
+        List<Row> correctSet = new ArrayList<Row>();
+        List<Row> list = data2016.selectExpr("CAST(hotel_id AS LONG)", "CAST(srch_ci AS STRING)", "CAST(srch_co AS STRING)")
                 .collectAsList();
-        for(Row row : correctSet){
+        for(Row row : list){
             Long hotelID = row.getLong(0);
             String checkIN = row.getString(1);
             String checkOUT = row.getString(2);
