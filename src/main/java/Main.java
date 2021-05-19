@@ -57,7 +57,7 @@ public class Main {
         listOfStructField.add(DataTypes.createStructField("stay_type",DataTypes.IntegerType,false));
         StructType structType = DataTypes.createStructType(listOfStructField);
         Dataset<Row> dataset = spark.createDataFrame(correctSet, structType);
-        dataset.show();
+        dataset.where("stay_type=0").show();
         System.out.println("Temp size is " + correctSet.size());
     }
 
