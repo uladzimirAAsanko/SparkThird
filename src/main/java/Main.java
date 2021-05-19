@@ -1,5 +1,6 @@
 import by.sanko.spark.two.entity.HotelData;
 import by.sanko.spark.two.parser.HotelParser;
+import by.sanko.spark.two.parser.Parser;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.Row;
@@ -16,6 +17,7 @@ public class Main {
     private static String YEAR_2017_AUG = "weather-hash-2017-8";
     private static String YEAR_2017_SEPT = "weather-hash-2017-9";
     private static HashMap<Long, HashMap<String, Double>> hotelWeatherHM = new HashMap<>();
+    private static char comma = ',';
 
     public static void main(String[] args) {
         SparkSession spark = SparkSession.builder().appName("Simple Application").getOrCreate();
@@ -75,7 +77,21 @@ public class Main {
         }
         df.selectExpr("CAST(value AS STRING)").foreach(row -> {
             String value = row.getString(0);
-            System.out.println(value);
+            int indexOfComma = value.indexOf(Parser.comma);
+            Long hotelID = Long.parseLong(value.substring(0,indexOfComma));
+            indexOfComma ++;
+            int indexOfNextComma = value.indexOf(Parser.comma, indexOfComma);
+            String date = value.substring(indexOfComma, indexOfNextComma);
+            Double avg = Double.parseDouble(value.substring(indexOfNextComma+1));
+            HashMap<String, Double> map = hotelWeatherHM.get(hotelID);
+            if(map == null){
+                map = new HashMap<>();
+                map.put(date,avg);
+                hotelWeatherHM.put(hotelID, map);
+            }else{
+                map.put(date,avg);
+            }
         });
+        System.out.println("Hotel map size is " + hotelWeatherHM.size());
     }
 }

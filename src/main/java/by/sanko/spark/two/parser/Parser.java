@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Parser {
-    private static final char comma = ',';
+    public static final char comma = ',';
 
     public static List<String> parse(String data, int numberOfFields){
         List<String> list = new ArrayList<>();
