@@ -1,10 +1,7 @@
 import by.sanko.spark.two.entity.HotelData;
 import by.sanko.spark.two.parser.HotelParser;
 import by.sanko.spark.two.parser.Parser;
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Encoders;
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,8 +28,21 @@ public class Main {
             System.out.println("Part is     " + part);
         }
         readWthData(spark, HOTEL_WEATHER_JOINED);
-        data2016.selectExpr("CAST(hotel_id AS LONG)", "CAST(srch_ci AS STRING)", "CAST(srch_co AS STRING)")
-                .show();
+        List<Row> rows = data2016.selectExpr("CAST(hotel_id AS LONG)", "CAST(srch_ci AS STRING)", "CAST(srch_co AS STRING)")
+                .collectAsList();
+        List<Double> tmp = new ArrayList<>();
+        for(Row value : rows){
+            Long hotelID = value.getLong(0);
+            String checkIN = value.getString(1);
+            String checkOUT = value.getString(2);
+            HashMap<String, Double> map = hotelWeatherHM.get(hotelID);
+            if(map == null || map.get(checkIN) <= 0){
+                tmp.add(-1.0);
+            }else{
+                tmp.add(map.get(checkIN));
+            }
+        }
+        System.out.println("Temp size is " + tmp.size());
     }
 
     private static void invokeHotelData(){
