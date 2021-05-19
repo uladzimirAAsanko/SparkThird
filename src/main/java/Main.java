@@ -73,7 +73,7 @@ public class Main {
         for(String part : strings){
             System.out.println("Part is     " + part);
         }
-        df.foreach(row -> {
+        df.selectExpr("CAST(value AS STRING)").foreach(row -> {
             String value = row.getString(0);
             System.out.println(value);
         });
