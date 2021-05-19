@@ -65,7 +65,7 @@ public class Main {
                 .option("kafka.bootstrap.servers", "host.docker.internal:9094")
                 .option("subscribe", topicName) //weathers-data-hash
                 .load();
-        df.show();
+        df.select("CAST(value AS STRING)").show();
         String[] strings = df.columns();
         System.out.println("Expedia rows are " + df.count());
         System.out.println("Schema is " + df.schema());
