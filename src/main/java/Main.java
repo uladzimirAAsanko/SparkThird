@@ -34,17 +34,19 @@ public class Main {
         readWthData(spark, HOTEL_WEATHER_JOINED);
         List<Row> correctSet = new ArrayList<>();
         List<Row> list = data2016
-                .selectExpr("CAST(hotel_id AS LONG)", "CAST(srch_ci AS STRING)", "CAST(srch_co AS STRING)", "CAST(id AS LONG)")
+                .selectExpr("CAST(hotel_id AS LONG)", "CAST(srch_ci AS STRING)", "CAST(srch_co AS STRING)",
+                        "CAST(id AS LONG)","CAST(srch_children_cnt AS INT)")
                 .collectAsList();
         for(Row row : list){
             Long hotelID = row.getLong(0);
             String checkIN = row.getString(1);
             String checkOUT = row.getString(2);
             Long id = row.getLong(3);
+            Integer withChld  = row.getInt(4);
             HashMap<String, Double> map = hotelWeatherHM.get(hotelID);
             if(map != null && map.get(checkIN) != null && map.get(checkIN) > 0){
                 int stayType = StayType.calculateType(checkIN, checkOUT).getStayID();
-                correctSet.add(RowFactory.create(id, hotelID, checkIN, checkOUT, map.get(checkIN), stayType));
+                correctSet.add(RowFactory.create(id, hotelID, checkIN, checkOUT, map.get(checkIN), stayType,withChld));
             }
         }
 
@@ -55,6 +57,7 @@ public class Main {
         listOfStructField.add(DataTypes.createStructField("checkOut",DataTypes.StringType,false));
         listOfStructField.add(DataTypes.createStructField("avg_tmp",DataTypes.DoubleType,false));
         listOfStructField.add(DataTypes.createStructField("stay_type",DataTypes.IntegerType,false));
+        listOfStructField.add(DataTypes.createStructField("cnt_child",DataTypes.IntegerType,false));
         StructType structType = DataTypes.createStructType(listOfStructField);
         Dataset<Row> cleanedAndMarkedDataset = spark.createDataFrame(correctSet, structType);
 
@@ -75,6 +78,8 @@ public class Main {
             i++;
             System.out.println("Processing rows of hotel with id " + hotelID + " hotel is " + i);
             Dataset<Row> allRowsWithHotel = cleanedAndMarkedDataset.where("hotel_id="+hotelID);
+            long allCount = allRowsWithHotel.count();
+            long countChild = allRowsWithHotel.where("cnt_child>0").count();
             long shortStayCount = allRowsWithHotel
                     .where("stay_type="+StayType.SHORT_STAY.getStayID()).count();
             long max = shortStayCount;
@@ -103,13 +108,15 @@ public class Main {
                 mostPopular = StayType.LONG_STAY;
             }
             String name = hotelData.get(hotelID).getName();
-            answerData.add(RowFactory.create(hotelID, name, shortStayCount,erroneousCount,
+            answerData.add(RowFactory.create(hotelID, name,allCount, countChild, shortStayCount,erroneousCount,
                     standStayCount, standExtendStayCount, longStayCount, mostPopular.toString()));
         }
 
         List<org.apache.spark.sql.types.StructField> structs = new ArrayList<>();
         structs.add(DataTypes.createStructField("hotel_id",DataTypes.LongType,false));
         structs.add(DataTypes.createStructField("hotel_name",DataTypes.StringType,false));
+        structs.add(DataTypes.createStructField("all_cnt",DataTypes.LongType,false));
+        structs.add(DataTypes.createStructField("child_cnt",DataTypes.LongType,false));
         structs.add(DataTypes.createStructField("short_stay_cnt",DataTypes.LongType,false));
         structs.add(DataTypes.createStructField("erroneous_stay_cnt",DataTypes.LongType,false));
         structs.add(DataTypes.createStructField("stand_stay_cnt",DataTypes.LongType,false));
