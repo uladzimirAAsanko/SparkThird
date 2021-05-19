@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class Main {
-    private static final HashMap<Long, HotelData> hotelData = new HashMap<>();
+    public static final HashMap<Long, HotelData> hotelData = new HashMap<>();
     private static final HashMap<Long, HashMap<String, Double>> hotelWeatherHM = new HashMap<>();
 
     public static void main(String[] args) {
