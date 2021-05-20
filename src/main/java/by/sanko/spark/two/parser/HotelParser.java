@@ -8,6 +8,9 @@ public class HotelParser {
     private static final char comma = ',';
 
     public static HotelData parseData(String data){
+        if(data == null || data.isEmpty()){
+            return null;
+        }
         List<String> list = Parser.parse(data, 8);
         long id = Long.parseLong(list.get(0));
         String name = list.get(1);
