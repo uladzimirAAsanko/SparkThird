@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class Main {
     public static final HashMap<Long, HotelData> hotelData = new HashMap<>();
     private static final HashMap<Long, HashMap<String, Double>> hotelWeatherHM = new HashMap<>();
+    private static Dataset<Row> timestamp = null;
 
     public static void main(String[] args) {
         SparkSession spark = SparkSession.builder().appName("Simple Application").getOrCreate();
@@ -128,7 +129,8 @@ public class Main {
         answerAtAll.show();
         System.out.println("Temp size is " + correctSet.size());
         System.out.println("Write 2016 data into csv file into folder");
-        answerAtAll.write().format("csv")
+        answerAtAll.withColumn("timestamp", timestamp.col("timestamp"))
+                .write().format("csv")
                 .option("sep", ";")
                 .option("inferSchema", "true")
                 .option("header", "true")
@@ -173,6 +175,7 @@ public class Main {
         for(String part : strings){
             System.out.println("Part is     " + part);
         }
+        timestamp = df.selectExpr("CAST(timestamp AS STRING)");
         df.selectExpr("CAST(value AS STRING)").foreach(row -> {
             String value = row.getString(0);
             int indexOfComma = value.indexOf(Parser.comma);
