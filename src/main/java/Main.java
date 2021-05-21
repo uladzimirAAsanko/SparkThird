@@ -6,6 +6,7 @@ import org.apache.spark.sql.*;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructType;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,7 +16,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class Main {
     public static final HashMap<Long, HotelData> hotelData = new HashMap<>();
     private static final HashMap<Long, HashMap<String, Double>> hotelWeatherHM = new HashMap<>();
-    private static Dataset<Row> timestamp = null;
 
     public static void main(String[] args) {
         SparkSession spark = SparkSession.builder().appName("Simple Application").getOrCreate();
@@ -108,12 +108,15 @@ public class Main {
             if(longStayCount > max){
                 mostPopular = StayType.LONG_STAY;
             }
+            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+            String timestampStr = timestamp.toString();
             String name = hotelData.get(hotelID).getName();
-            answerData.add(RowFactory.create(hotelID, name,allCount, countChild, shortStayCount,erroneousCount,
+            answerData.add(RowFactory.create(timestampStr, hotelID, name,allCount, countChild, shortStayCount,erroneousCount,
                     standStayCount, standExtendStayCount, longStayCount, mostPopular.toString()));
         }
 
         List<org.apache.spark.sql.types.StructField> structs = new ArrayList<>();
+        structs.add(DataTypes.createStructField("timestamp",DataTypes.StringType,false));
         structs.add(DataTypes.createStructField("hotel_id",DataTypes.LongType,false));
         structs.add(DataTypes.createStructField("hotel_name",DataTypes.StringType,false));
         structs.add(DataTypes.createStructField("all_cnt",DataTypes.LongType,false));
@@ -129,8 +132,7 @@ public class Main {
         answerAtAll.show();
         System.out.println("Temp size is " + correctSet.size());
         System.out.println("Write 2016 data into csv file into folder");
-        answerAtAll.withColumn("timestamp", timestamp.col("timestamp"))
-                .write().format("csv")
+        answerAtAll.write().format("csv")
                 .option("sep", ";")
                 .option("inferSchema", "true")
                 .option("header", "true")
@@ -175,7 +177,6 @@ public class Main {
         for(String part : strings){
             System.out.println("Part is     " + part);
         }
-        timestamp = df.selectExpr("CAST(timestamp AS STRING)");
         df.selectExpr("CAST(value AS STRING)").foreach(row -> {
             String value = row.getString(0);
             int indexOfComma = value.indexOf(Parser.comma);
